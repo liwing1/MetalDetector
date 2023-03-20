@@ -3,9 +3,9 @@
 ## Projeto: Detector de Metais
 
 - Esquemático:
-    - [ ] Regulação de Tensão (12V->3v3)
-    - [ ] Microcontrolador (ESP32)
-    - [ ] Sensor de Indução (LDC1101)
+    - [X] Regulação de Tensão (12V->3v3)
+    - [X] Microcontrolador (ESP32)
+    - [X] Sensor de Indução (LDC1101)
     - [ ] Interface com Usuário (LED + Botão)
 
 - Firmware:

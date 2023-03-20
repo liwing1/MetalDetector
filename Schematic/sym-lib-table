@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "LDC1101DRCT")(type "KiCad")(uri "${KIPRJMOD}/Symbol/LDC1101DRCT.kicad_sym")(options "")(descr ""))
+)

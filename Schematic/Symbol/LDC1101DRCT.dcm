@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP LDC1101DRCT
+D TEXAS INSTRUMENTS - LDC1101DRCT - INDUCTANCE TO DIGITAL CONV, SPI, VSON-10
+K
+F http://www.ti.com/lit/ds/symlink/ldc1101.pdf
+$ENDCMP
+#
+#End Doc Library
