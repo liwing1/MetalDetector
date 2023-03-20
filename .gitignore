@@ -52,6 +52,10 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
+# ESP-IDF Files
+build
+.vscode
+.devcontainer
 
 ### KiCad ###
 # For PCBs designed using KiCad: https://www.kicad.org/
