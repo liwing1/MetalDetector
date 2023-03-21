@@ -23,9 +23,7 @@ void systemInit()
     // mikrobus_gpioInit( _MIKROBUS1, _MIKROBUS_CS_PIN, _GPIO_OUTPUT );
     
     // mikrobus_spiInit( _MIKROBUS1, &_LDC1101_SPI_CFG[0] );
-    // mikrobus_logInit( _LOG_USBUART, 9600 );
-    // mikrobus_logWrite("--- System Init ---", _LOG_LINE);
-    // Delay_ms( 100 );
+    vTaskDelay(100/portTICK_PERIOD_MS);
 }
 
 void applicationInit()
@@ -71,9 +69,6 @@ void button_task(void* arg)
 
 void app_main(void)
 {
-    // spi_bus_initialize(SPI2_HOST, &spi_bus_config, SPI_DMA_CH_AUTO);
-    // spi_bus_add_device(SPI2_HOST, &spi_device_interface_config, &spi_handle);
-
     systemInit();
     applicationInit();
 

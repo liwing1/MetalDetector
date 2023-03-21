@@ -36,3 +36,9 @@ spi_device_interface_config_t spi_device_interface_config = {
     .pre_cb = NULL,
     .post_cb = NULL,
 };
+
+void init_spi(void)
+{
+    spi_bus_initialize(SPI2_HOST, &spi_bus_config, SPI_DMA_CH_AUTO);
+    spi_bus_add_device(SPI2_HOST, &spi_device_interface_config, &spi_handle);
+}
