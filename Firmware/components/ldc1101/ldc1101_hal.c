@@ -80,7 +80,7 @@
 /**
  * @brief Map SPI Function Pointers
  */
-static void hal_spiMap(T_HAL_P spiObj);
+void hal_spiMap(T_HAL_P spiObj);
 
 /**
  * @brief hal_spiWrite
@@ -93,7 +93,9 @@ static void hal_spiMap(T_HAL_P spiObj);
  * @note
  * This function have not using CS pin.
  */
-static void hal_spiWrite(uint8_t *pBuf, uint16_t nBytes);
+void hal_spiWrite(uint8_t *pBuf, uint16_t nBytes){
+    *pBuf = nBytes;
+}
 
 /**
  * @brief hal_spiRead
@@ -106,7 +108,9 @@ static void hal_spiWrite(uint8_t *pBuf, uint16_t nBytes);
  * @note
  * This function should not use CS pin.
  */
-static void hal_spiRead(uint8_t *pBuf, uint16_t nBytes);
+void hal_spiRead(uint8_t *pBuf, uint16_t nBytes){
+    *pBuf = nBytes;
+}
 
 /**
  * @brief hal_spiTransfer
@@ -120,7 +124,7 @@ static void hal_spiRead(uint8_t *pBuf, uint16_t nBytes);
  * @note
  * This function should not use CS pin.
  */
-static void hal_spiTransfer(uint8_t *pIn, uint8_t *pOut, uint16_t nBytes);
+void hal_spiTransfer(uint8_t *pIn, uint8_t *pOut, uint16_t nBytes);
 
                                                                        /** @} */
 #endif
@@ -131,7 +135,7 @@ static void hal_spiTransfer(uint8_t *pIn, uint8_t *pOut, uint16_t nBytes);
 /**
  * @brief Map I2C Function Pointers
  */
-static void hal_i2cMap(T_HAL_P i2cObj);
+void hal_i2cMap(T_HAL_P i2cObj);
 
 /**
  * @brief hal_i2cStart
@@ -199,7 +203,7 @@ static int hal_i2cRead(uint8_t slaveAddress, uint8_t *pBuf, uint16_t nBytes, uin
 /**
  * @brief Map UART Function Pointers
  */
-static void hal_uartMap(T_HAL_P uartObj);
+void hal_uartMap(T_HAL_P uartObj);
 
 /**
  * @brief hal_uartWrite
@@ -208,7 +212,7 @@ static void hal_uartMap(T_HAL_P uartObj);
  *
  * Function writes one byte on UART.
  */
-static void hal_uartWrite(uint8_t input);
+void hal_uartWrite(uint8_t input);
 
 /**
  * @brief hal_uartRead
@@ -318,7 +322,7 @@ static T_hal_gpioSetFp          hal_gpio_sdaSet;
 /**
  * @brief Map GPIO Function pointers
  */
-static void hal_gpioMap(T_HAL_P gpioObj)
+void hal_gpioMap(T_HAL_P gpioObj)
 {
     T_HAL_GPIO_OBJ tmp = (T_HAL_GPIO_OBJ)gpioObj;
 

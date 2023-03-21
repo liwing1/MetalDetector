@@ -13,7 +13,9 @@
 
 #define LDC1101_TAG "LDC1101"
 
-#define RP_TRESHOLD 1000    //TBD
+#define RP_W_NO_TARGET  (float) 5.63
+#define RP_W_TARGET     (float) 5.55
+#define RP_TRESHOLD     (float) (RP_W_NO_TARGET - ((RP_W_NO_TARGET - RP_W_TARGET)/2))
 
 typedef enum{
     SENSOR_OCIOSO = 0,
@@ -42,7 +44,7 @@ void applicationInit()
 
     // Valores otimizados da ref: http://www.ti.com/lit/zip/slyc137
     // RPmax = 12k; RPmin = 3k
-    ldc1101_writeByte(_LDC1101_REG_CFG_RP_MEASUREMENT_DYNAMIC_RANGE,_LDC1101_RP_SET_RP_MIN_12KOhm | _LDC1101_RP_SET_RP_MIN_3KOhm);
+    ldc1101_writeByte(_LDC1101_REG_CFG_RP_MEASUREMENT_DYNAMIC_RANGE,_LDC1101_RP_SET_RP_MAX_12KOhm | _LDC1101_RP_SET_RP_MIN_3KOhm);
     // C1 = 6pF; R1 = 41.63k
     ldc1101_writeByte(_LDC1101_REG_CFG_INTERNAL_TIME_CONSTANT_1,_LDC1101_TC1_C1_6pF | 0x1D);
     // C2 = 24pF; R2 = 97.5k
@@ -57,10 +59,14 @@ void applicationInit()
 }
 
 void ldc1101_task()
-{
+{   
+    uint16_t RP_Data;
+    float Rp;
+
     while(1)
     {
-        uint16_t RP_Data = 0;
+        RP_Data = 0;
+        Rp = 0;
 
         switch(sensor_state)
         {
@@ -71,7 +77,10 @@ void ldc1101_task()
 
             case SENSOR_DETECT:
                 RP_Data = ldc1101_getRPData();
-                buzzer_set_level(RP_Data > RP_TRESHOLD ? BUZZER_ON:BUZZER_OFF);
+                // Calcular Rp pela eq 4
+                Rp = (12000 * 3000)/((12000 * (1-RP_Data/65535)) + (3000 * (RP_Data/65535)));
+
+                buzzer_set_level(Rp > RP_TRESHOLD ? BUZZER_ON:BUZZER_OFF);
                 ESP_LOGW(LDC1101_TAG, "Inductive Linear Position: %d", RP_Data);
                 
             break;
