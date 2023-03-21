@@ -103,21 +103,13 @@ void hal_spiMap(T_HAL_P spiObj)
         .sclk_io_num = tmp->sclk_io_num,
         .quadwp_io_num = PIN_NOT_USED,
         .quadhd_io_num = PIN_NOT_USED,
-        .data4_io_num = PIN_NOT_USED,
-        .data5_io_num = PIN_NOT_USED,
-        .data6_io_num = PIN_NOT_USED,
-        .data7_io_num = PIN_NOT_USED,
         .max_transfer_sz = 32,
     };
 
     spi_device_interface_config_t spi_device_interface_config = {
-        .command_bits = 0,          //1:READ; 0:WRITE
-        .address_bits = 8,
-        .dummy_bits = 8,
         .mode = 2,                  //POL:1; PHA:0
-        .duty_cycle_pos = 128,      //50%
-        .clock_speed_hz = 8000000,
-        .input_delay_ns = 0,
+        .clock_speed_hz = tmp->clk_speed_hz,
+        .queue_size = 1,
         .spics_io_num = PIN_NOT_USED,
         .pre_cb = NULL,
         .post_cb = NULL,

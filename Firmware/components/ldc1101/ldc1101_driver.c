@@ -154,10 +154,9 @@ void Delay_100ms(void)
 
 #ifdef   __LDC1101_DRV_SPI__
 
-void ldc1101_spiDriverInit(T_LDC1101_P gpioObj, T_LDC1101_P spiObj)
+void ldc1101_spiDriverInit(T_LDC1101_P spiObj)
 {
     hal_spiMap( spiObj );
-    // hal_gpioMap( (T_HAL_P)gpioObj );
 
     hal_gpio_csSet(1);
 }

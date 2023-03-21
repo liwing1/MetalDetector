@@ -34,7 +34,13 @@ void systemInit()
 
 void applicationInit()
 {
-    ldc1101_spiDriverInit( NULL, NULL );
+    _LDC1101_SPI_INTERFACE spi_interface ={
+        .miso_io_num = 12,
+        .mosi_io_num = 13,
+        .sclk_io_num = 14,
+        .clk_speed_hz = 8000000,
+    };
+    ldc1101_spiDriverInit( (T_LDC1101_P)&spi_interface );
     ldc1101_init();
 
     // Valores otimizados da ref: http://www.ti.com/lit/zip/slyc137

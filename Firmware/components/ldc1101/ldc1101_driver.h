@@ -51,6 +51,13 @@
 //  #define   __LDC1101_DRV_I2C__                            /**<     @macro __LDC1101_DRV_I2C__  @brief I2C driver selector */                                          
 // #define   __LDC1101_DRV_UART__                           /**<     @macro __LDC1101_DRV_UART__ @brief UART driver selector */ 
 
+typedef struct{
+   int mosi_io_num;
+   int miso_io_num;
+   int sclk_io_num;
+   int clk_speed_hz;
+} _LDC1101_SPI_INTERFACE;
+
                                                                        /** @} */
 /** @defgroup LDC1101_VAR Variables */                           /** @{ */
 
@@ -173,7 +180,7 @@ extern "C"{
 /** @defgroup LDC1101_INIT Driver Initialization */              /** @{ */
 
 #ifdef   __LDC1101_DRV_SPI__
-void ldc1101_spiDriverInit(T_LDC1101_P gpioObj, T_LDC1101_P spiObj);
+void ldc1101_spiDriverInit(T_LDC1101_P spiObj);
 #endif
 #ifdef   __LDC1101_DRV_I2C__
 void ldc1101_i2cDriverInit(T_LDC1101_P gpioObj, T_LDC1101_P i2cObj, uint8_t slave);
