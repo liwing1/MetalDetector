@@ -1468,7 +1468,7 @@
     (effects (font (size 1.27 1.27) bold) (justify left bottom))
     (uuid ed03928e-5c93-4018-81f9-ef3b75a1f887)
   )
-  (text "12V / 3.3V 5A" (at 14.732 119.126 0)
+  (text "12V / 3.3V 2A" (at 14.732 119.126 0)
     (effects (font (size 1.27 1.27) bold) (justify left bottom))
     (uuid ff12cd98-7996-4991-8adb-65828d8a047f)
   )
