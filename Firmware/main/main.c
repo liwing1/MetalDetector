@@ -78,7 +78,7 @@ void ldc1101_task()
                 // Calcular Rp pela eq 4
                 Rp = (12000 * 3000)/((12000 * (1-RP_Data/65535)) + (3000 * (RP_Data/65535)));
 
-                buzzer_set_level(Rp > RP_TRESHOLD ? BUZZER_ON:BUZZER_OFF);
+                buzzer_set_level(Rp < RP_TRESHOLD ? BUZZER_ON:BUZZER_OFF);
                 ESP_LOGW(LDC1101_TAG, "Inductive Linear Position: %d", RP_Data);
                 
             break;
@@ -100,8 +100,8 @@ void button_task(void* arg)
 
             led_set_level(sensor_state == SENSOR_OCIOSO ? LED_OFF:LED_ON);
 
-            vTaskDelay(100/portTICK_PERIOD_MS);
         }
+        vTaskDelay(100/portTICK_PERIOD_MS);
     }
 }
 
