@@ -29,17 +29,12 @@ void systemInit()
     init_gpio();    // Init buzzer, led e botao
     init_pwm();     // PWM -> CLKIN
     
-    // mikrobus_gpioInit( _MIKROBUS1, _MIKROBUS_INT_PIN, _GPIO_INPUT );
-    // mikrobus_gpioInit( _MIKROBUS1, _MIKROBUS_PWM_PIN, _GPIO_INPUT );
-    // mikrobus_gpioInit( _MIKROBUS1, _MIKROBUS_CS_PIN, _GPIO_OUTPUT );
-    
-    // mikrobus_spiInit( _MIKROBUS1, &_LDC1101_SPI_CFG[0] );
     vTaskDelay(100/portTICK_PERIOD_MS);
 }
 
 void applicationInit()
 {
-    // ldc1101_spiDriverInit( (T_LDC1101_P)&_MIKROBUS1_GPIO, (T_LDC1101_P)&_MIKROBUS1_SPI );
+    ldc1101_spiDriverInit( NULL, NULL );
     ldc1101_init();
 
     // Valores otimizados da ref: http://www.ti.com/lit/zip/slyc137

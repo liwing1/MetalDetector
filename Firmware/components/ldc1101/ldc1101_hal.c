@@ -30,11 +30,12 @@
 /* -------------------------------------------------------------------------- */
 
 #include "stdint.h"
+#include "driver/spi_master.h"
 
 /** 
  * HAL Global Abstract Type
  */
-#define T_HAL_P         const uint8_t*      
+#define T_HAL_P         const uint32_t*      
 
 #define T_HAL_SPI_OBJ   const T_hal_spiObj*
 #define T_HAL_I2C_OBJ   const T_hal_i2cObj*
@@ -51,7 +52,7 @@
 // #define   __RST_PIN_INPUT__         1
 // #define   __CS_PIN_INPUT__          2
 // #define   __SCK_PIN_INPUT__         3
-// #define   __MISO_PIN_INPUT__        4                                   
+#define   __MISO_PIN_INPUT__        12                                   
 // #define   __MOSI_PIN_INPUT__        5
   #define   __PWM_PIN_INPUT__         6                                  
   #define   __INT_PIN_INPUT__         7
@@ -62,25 +63,69 @@
 
 // #define   __AN_PIN_OUTPUT__         0
 // #define   __RST_PIN_OUTPUT__        1                                   
- #define   __CS_PIN_OUTPUT__         2                              
-// #define   __SCK_PIN_OUTPUT__        3
+#define   __CS_PIN_OUTPUT__         15                              
+#define   __SCK_PIN_OUTPUT__        14
 // #define   __MISO_PIN_OUTPUT__       4                                    
-// #define   __MOSI_PIN_OUTPUT__       5
+#define   __MOSI_PIN_OUTPUT__       13
 // #define   __PWM_PIN_OUTPUT__        6                                    
 // #define   __INT_PIN_OUTPUT__        7
 // #define   __RX_PIN_OUTPUT__         8                                
 // #define   __TX_PIN_OUTPUT__         9
 // #define   __SCL_PIN_OUTPUT__        10                                    
 // #define   __SDA_PIN_OUTPUT__        11    
+#define PIN_NOT_USED    -1
                                                                        /** @} */
 #ifdef __HAL_SPI__
 
+static spi_device_handle_t spi_handle;
+
 /** @defgroup LDC1101_HAL_SPI HAL SPI Interface */               /** @{ */
+
+
+typedef struct
+{
+    int mosi_io_num;
+    int miso_io_num;
+    int sclk_io_num;
+    int clk_speed_hz;
+} T_hal_spiObj;
 
 /**
  * @brief Map SPI Function Pointers
  */
-void hal_spiMap(T_HAL_P spiObj);
+void hal_spiMap(T_HAL_P spiObj)
+{
+    T_HAL_SPI_OBJ tmp = (T_HAL_SPI_OBJ)spiObj;
+
+    spi_bus_config_t spi_bus_config = {
+        .mosi_io_num = tmp->mosi_io_num,
+        .miso_io_num = tmp->miso_io_num,
+        .sclk_io_num = tmp->sclk_io_num,
+        .quadwp_io_num = PIN_NOT_USED,
+        .quadhd_io_num = PIN_NOT_USED,
+        .data4_io_num = PIN_NOT_USED,
+        .data5_io_num = PIN_NOT_USED,
+        .data6_io_num = PIN_NOT_USED,
+        .data7_io_num = PIN_NOT_USED,
+        .max_transfer_sz = 32,
+    };
+
+    spi_device_interface_config_t spi_device_interface_config = {
+        .command_bits = 0,          //1:READ; 0:WRITE
+        .address_bits = 8,
+        .dummy_bits = 8,
+        .mode = 2,                  //POL:1; PHA:0
+        .duty_cycle_pos = 128,      //50%
+        .clock_speed_hz = 8000000,
+        .input_delay_ns = 0,
+        .spics_io_num = PIN_NOT_USED,
+        .pre_cb = NULL,
+        .post_cb = NULL,
+    };
+
+    spi_bus_initialize(SPI2_HOST, &spi_bus_config, SPI_DMA_CH_AUTO);
+    spi_bus_add_device(SPI2_HOST, &spi_device_interface_config, &spi_handle);
+}
 
 /**
  * @brief hal_spiWrite
@@ -93,8 +138,13 @@ void hal_spiMap(T_HAL_P spiObj);
  * @note
  * This function have not using CS pin.
  */
-void hal_spiWrite(uint8_t *pBuf, uint16_t nBytes){
-    *pBuf = nBytes;
+void hal_spiWrite(uint8_t *pBuf, uint16_t nBytes)
+{
+    spi_transaction_t transaction = {
+        .tx_buffer = pBuf,
+        .length = nBytes
+    };
+    spi_device_polling_transmit(spi_handle, &transaction);
 }
 
 /**
@@ -108,8 +158,13 @@ void hal_spiWrite(uint8_t *pBuf, uint16_t nBytes){
  * @note
  * This function should not use CS pin.
  */
-void hal_spiRead(uint8_t *pBuf, uint16_t nBytes){
-    *pBuf = nBytes;
+void hal_spiRead(uint8_t *pBuf, uint16_t nBytes)
+{
+    spi_transaction_t transaction = {
+        .rx_buffer = pBuf,
+        .length = nBytes
+    };
+    spi_device_polling_transmit(spi_handle, &transaction);
 }
 
 /**
@@ -372,7 +427,7 @@ void hal_gpioMap(T_HAL_P gpioObj)
     hal_gpio_rstSet = tmp->gpioSet[ __RST_PIN_OUTPUT__ ];
 #endif
 #ifdef __SCK_PIN_OUTPUT__ 
-    hal_gpio_sckSet = tmp->gpioSet[ __SCK_PIN_OUTPUT ];
+    hal_gpio_sckSet = tmp->gpioSet[ __SCK_PIN_OUTPUT__ ];
 #endif
 #ifdef __MISO_PIN_OUTPUT__
     hal_gpio_misoSet = tmp->gpioSet[ __MISO_PIN_OUTPUT__ ];
@@ -450,10 +505,6 @@ void hal_gpioMap(T_HAL_P gpioObj)
 #ifdef __MCHP__
 #include "__HAL_CEC.c"
 #endif
-#endif
-
-#ifdef CONFIG_IDF_TARGET_ESP32
-#include "hal_esp32.c"
 #endif
 
 /* -------------------------------------------------------------------------- */

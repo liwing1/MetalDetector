@@ -43,7 +43,7 @@
  * @macro T_LDC1101_P
  * @brief Driver Abstract type 
  */
-#define T_LDC1101_P    const uint8_t*
+#define T_LDC1101_P    const uint32_t*
 
 /** @defgroup LDC1101_COMPILE Compilation Config */              /** @{ */
 
