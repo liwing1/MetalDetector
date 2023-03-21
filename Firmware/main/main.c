@@ -9,8 +9,9 @@
 #include "esp_log.h"
 
 #include "my_gpio.h"
+#include "ldc1101_driver.h"
 
-// #include "ldc1101_driver.h"
+#define LDC1101_TAG "LDC1101"
 
 static bool sensor_on_off = 0;  //LED começa desligado
 
@@ -30,26 +31,36 @@ void systemInit()
 void applicationInit()
 {
     // ldc1101_spiDriverInit( (T_LDC1101_P)&_MIKROBUS1_GPIO, (T_LDC1101_P)&_MIKROBUS1_SPI );
-    // ldc1101_init();
+    ldc1101_init();
 
-    // // Configuration
-    // ldc1101_writeByte(_LDC1101_REG_CFG_RP_MEASUREMENT_DYNAMIC_RANGE,_LDC1101_RP_SET_RP_MAX_24KOhm | _LDC1101_RP_SET_RP_MIN_1_5KOhm);
-    // ldc1101_writeByte(_LDC1101_REG_CFG_INTERNAL_TIME_CONSTANT_1,_LDC1101_TC1_C1_0_75pF | _LDC1101_TC1_R1_21_1kOhm);
-    // ldc1101_writeByte(_LDC1101_REG_CFG_INTERNAL_TIME_CONSTANT_2,_LDC1101_TC2_C2_3pF | _LDC1101_TC2_R2_30_5kOhm);
-    // ldc1101_writeByte(_LDC1101_REG_CFG_RP_L_CONVERSION_INTERVAL, 0xD0 | _LDC1101_DIG_CFG_RESP_TIME_768s);
-    // ldc1101_setPowerMode(_LDC1101_FUNC_MODE_ACTIVE_CONVERSION_MODE);
+    // Valores otimizados da ref: http://www.ti.com/lit/zip/slyc137
+    // RPmax = 12k; RPmin = 3k
+    ldc1101_writeByte(_LDC1101_REG_CFG_RP_MEASUREMENT_DYNAMIC_RANGE,_LDC1101_RP_SET_RP_MIN_12KOhm | _LDC1101_RP_SET_RP_MIN_3KOhm);
+    // C1 = 6pF; R1 = 41.63k
+    ldc1101_writeByte(_LDC1101_REG_CFG_INTERNAL_TIME_CONSTANT_1,_LDC1101_TC1_C1_6pF | 0x1D);
+    // C2 = 24pF; R2 = 97.5k
+    ldc1101_writeByte(_LDC1101_REG_CFG_INTERNAL_TIME_CONSTANT_2,_LDC1101_TC2_C2_24pF | 0x39);
+    // MINfreq = 7MHz; RESPtime = 192s
+    ldc1101_writeByte(_LDC1101_REG_CFG_RP_L_CONVERSION_INTERVAL, 0xD0 | _LDC1101_DIG_CFG_RESP_TIME_192s);
     
-    // ldc1101_goTo_RPmode();
-    ESP_LOGW("LDC1101", "--- Start measurement ---");
+    ldc1101_setPowerMode(_LDC1101_FUNC_MODE_ACTIVE_CONVERSION_MODE);
+    
+    ldc1101_goTo_RPmode();
+    ESP_LOGW(LDC1101_TAG, "--- Start measurement ---");
 }
 
-void applicationTask()
+void ldc1101_task()
 {
-    // RP_Data = ldc1101_getRPData();
-    // LongWordToStr(RP_Data, demoText);
-    // mikrobus_logWrite(" Inductive Linear Position :", _LOG_TEXT);
-    // mikrobus_logWrite(demoText, _LOG_LINE);
-    // Delay_100ms();
+    uint16_t RP_Data = 0;
+
+    while(1)
+    {
+        RP_Data = ldc1101_getRPData();
+
+        ESP_LOGW(LDC1101_TAG, "Inductive Linear Position: %d", RP_Data);
+
+        vTaskDelay(100/portTICK_PERIOD_MS);
+    }
 }
 
 void button_task(void* arg)
@@ -63,7 +74,7 @@ void button_task(void* arg)
 
             led_set_level(sensor_on_off);
 
-            vTaskDelay(50/portTICK_PERIOD_MS);
+            vTaskDelay(100/portTICK_PERIOD_MS);
         }
     }
 }
@@ -73,9 +84,6 @@ void app_main(void)
     systemInit();
     applicationInit();
 
-    xTaskCreate(button_task, "button_task", 4096, NULL, 10, NULL);
-    while (1)
-    {
-        applicationTask();
-    }
+    xTaskCreate(button_task, "button_task", 4096, NULL, 5, NULL);
+    xTaskCreate(ldc1101_task, "ldc1101_task", 4096, NULL, 10, NULL);
 }
