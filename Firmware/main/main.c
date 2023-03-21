@@ -61,13 +61,10 @@ void applicationInit()
 
 void ldc1101_task()
 {   
-    uint16_t RP_Data;
-    float Rp;
-
     while(1)
     {
-        RP_Data = 0;
-        Rp = 0;
+        uint16_t RP_Data = 0;
+        float Rp = 0;
 
         switch(sensor_state)
         {
