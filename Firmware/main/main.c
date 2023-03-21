@@ -3,59 +3,83 @@
 #include "sdkconfig.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/queue.h"
 #include "esp_chip_info.h"
 #include "esp_flash.h"
 
-#include "driver/gpio.h"
-#include "driver/spi_master.h"
+#include "my_gpio.h"
 
-#define PIN_NOT_USED    -1
+// #include "ldc1101_driver.h"
 
-#define PIN_SPI_MISO    GPIO_NUM_12
-#define PIN_SPI_MOSI    GPIO_NUM_13
-#define PIN_SPI_CLK     GPIO_NUM_14
-#define PIN_SPI_CS      GPIO_NUM_15
+static bool sensor_on_off = 0;  //LED começa desligado
 
-#define PIN_STATUS_LED  GPIO_NUM_17
+void systemInit()
+{
+    init_gpio();    // Init buzzer, led e botao
+    init_pwm();     // PWM -> CLKIN
+    
+    // mikrobus_gpioInit( _MIKROBUS1, _MIKROBUS_INT_PIN, _GPIO_INPUT );
+    // mikrobus_gpioInit( _MIKROBUS1, _MIKROBUS_PWM_PIN, _GPIO_INPUT );
+    // mikrobus_gpioInit( _MIKROBUS1, _MIKROBUS_CS_PIN, _GPIO_OUTPUT );
+    
+    // mikrobus_spiInit( _MIKROBUS1, &_LDC1101_SPI_CFG[0] );
+    // mikrobus_logInit( _LOG_USBUART, 9600 );
+    // mikrobus_logWrite("--- System Init ---", _LOG_LINE);
+    // Delay_ms( 100 );
+}
 
-#define PIN_BUZZER      GPIO_NUM_21
+void applicationInit()
+{
+    // ldc1101_spiDriverInit( (T_LDC1101_P)&_MIKROBUS1_GPIO, (T_LDC1101_P)&_MIKROBUS1_SPI );
+    // ldc1101_init();
 
-spi_bus_config_t spi_bus_config = {
-    .mosi_io_num = PIN_SPI_MOSI,
-    .miso_io_num = PIN_SPI_MISO,
-    .sclk_io_num = PIN_SPI_CLK,
-    .quadwp_io_num = PIN_NOT_USED,
-    .quadhd_io_num = PIN_NOT_USED,
-    .data4_io_num = PIN_NOT_USED,
-    .data5_io_num = PIN_NOT_USED,
-    .data6_io_num = PIN_NOT_USED,
-    .data7_io_num = PIN_NOT_USED,
-    .max_transfer_sz = 32,
-};
+    // // Configuration
+    // ldc1101_writeByte(_LDC1101_REG_CFG_RP_MEASUREMENT_DYNAMIC_RANGE,_LDC1101_RP_SET_RP_MAX_24KOhm | _LDC1101_RP_SET_RP_MIN_1_5KOhm);
+    // ldc1101_writeByte(_LDC1101_REG_CFG_INTERNAL_TIME_CONSTANT_1,_LDC1101_TC1_C1_0_75pF | _LDC1101_TC1_R1_21_1kOhm);
+    // ldc1101_writeByte(_LDC1101_REG_CFG_INTERNAL_TIME_CONSTANT_2,_LDC1101_TC2_C2_3pF | _LDC1101_TC2_R2_30_5kOhm);
+    // ldc1101_writeByte(_LDC1101_REG_CFG_RP_L_CONVERSION_INTERVAL, 0xD0 | _LDC1101_DIG_CFG_RESP_TIME_768s);
+    // ldc1101_setPowerMode(_LDC1101_FUNC_MODE_ACTIVE_CONVERSION_MODE);
+    
+    // ldc1101_goTo_RPmode();
+    // mikrobus_logWrite("--- Start measurement ---", _LOG_LINE);
+}
 
-spi_device_interface_config_t spi_device_interface_config = {
-    .command_bits = 1,          //1:READ; 0:WRITE
-    .address_bits = 7,
-    .dummy_bits = 8,
-    .mode = 2,                  //POL:1; PHA:0
-    .duty_cycle_pos = 128,      //50%
-    .clock_speed_hz = 8000000,
-    .input_delay_ns = 0,
-    .spics_io_num = PIN_SPI_CS,
-    .pre_cb = NULL,
-    .post_cb =NULL,
-};
+void applicationTask()
+{
+    // RP_Data = ldc1101_getRPData();
+    // LongWordToStr(RP_Data, demoText);
+    // mikrobus_logWrite(" Inductive Linear Position :", _LOG_TEXT);
+    // mikrobus_logWrite(demoText, _LOG_LINE);
+    // Delay_100ms();
+}
 
-spi_device_handle_t spi_handle;
+void button_task(void* arg)
+{
+    uint32_t io_num;
+    for(;;) {
+        // Entra neste if quando botão é precionado
+        if(xQueueReceive(gpio_evt_queue, &io_num, portMAX_DELAY)) {
+            
+            sensor_on_off = !sensor_on_off; //toggle sensor
+
+            led_set_level(sensor_on_off);
+
+            vTaskDelay(50/portTICK_PERIOD_MS);
+        }
+    }
+}
 
 void app_main(void)
 {
-    spi_bus_initialize(SPI2_HOST, &spi_bus_config, SPI_DMA_CH_AUTO);
+    // spi_bus_initialize(SPI2_HOST, &spi_bus_config, SPI_DMA_CH_AUTO);
+    // spi_bus_add_device(SPI2_HOST, &spi_device_interface_config, &spi_handle);
 
-    spi_bus_add_device(SPI2_HOST, &spi_device_interface_config, &spi_handle);
+    systemInit();
+    applicationInit();
 
-
-    printf("Hello world!\n");
-
-    esp_restart();
+    xTaskCreate(button_task, "button_task", 4096, NULL, 10, NULL);
+    while (1)
+    {
+        applicationTask();
+    }
 }
