@@ -6,6 +6,7 @@
 #include "freertos/queue.h"
 #include "esp_chip_info.h"
 #include "esp_flash.h"
+#include "esp_log.h"
 
 #include "my_gpio.h"
 
@@ -39,7 +40,7 @@ void applicationInit()
     // ldc1101_setPowerMode(_LDC1101_FUNC_MODE_ACTIVE_CONVERSION_MODE);
     
     // ldc1101_goTo_RPmode();
-    // mikrobus_logWrite("--- Start measurement ---", _LOG_LINE);
+    ESP_LOGW("LDC1101", "--- Start measurement ---");
 }
 
 void applicationTask()
