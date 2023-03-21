@@ -13,7 +13,14 @@
 
 #define LDC1101_TAG "LDC1101"
 
-static bool sensor_on_off = 0;  //LED começa desligado
+#define RP_TRESHOLD 1000    //TBD
+
+typedef enum{
+    SENSOR_OCIOSO = 0,
+    SENSOR_DETECT,
+} sensor_state_t;
+
+static sensor_state_t sensor_state = SENSOR_OCIOSO;  //sensor começa desligado
 
 void systemInit()
 {
@@ -42,7 +49,7 @@ void applicationInit()
     ldc1101_writeByte(_LDC1101_REG_CFG_INTERNAL_TIME_CONSTANT_2,_LDC1101_TC2_C2_24pF | 0x39);
     // MINfreq = 7MHz; RESPtime = 192s
     ldc1101_writeByte(_LDC1101_REG_CFG_RP_L_CONVERSION_INTERVAL, 0xD0 | _LDC1101_DIG_CFG_RESP_TIME_192s);
-    
+
     ldc1101_setPowerMode(_LDC1101_FUNC_MODE_ACTIVE_CONVERSION_MODE);
     
     ldc1101_goTo_RPmode();
@@ -51,13 +58,24 @@ void applicationInit()
 
 void ldc1101_task()
 {
-    uint16_t RP_Data = 0;
-
     while(1)
     {
-        RP_Data = ldc1101_getRPData();
+        uint16_t RP_Data = 0;
 
-        ESP_LOGW(LDC1101_TAG, "Inductive Linear Position: %d", RP_Data);
+        switch(sensor_state)
+        {
+            case SENSOR_OCIOSO:
+                buzzer_set_level(BUZZER_OFF);
+
+            break;
+
+            case SENSOR_DETECT:
+                RP_Data = ldc1101_getRPData();
+                buzzer_set_level(RP_Data > RP_TRESHOLD ? BUZZER_ON:BUZZER_OFF);
+                ESP_LOGW(LDC1101_TAG, "Inductive Linear Position: %d", RP_Data);
+                
+            break;
+        }
 
         vTaskDelay(100/portTICK_PERIOD_MS);
     }
@@ -66,13 +84,14 @@ void ldc1101_task()
 void button_task(void* arg)
 {
     uint32_t io_num;
-    for(;;) {
+    while(1)
+    {
         // Entra neste if quando botão é precionado
         if(xQueueReceive(gpio_evt_queue, &io_num, portMAX_DELAY)) {
             
-            sensor_on_off = !sensor_on_off; //toggle sensor
+            sensor_state = !sensor_state; //toggle sensor
 
-            led_set_level(sensor_on_off);
+            led_set_level(sensor_state == SENSOR_OCIOSO ? LED_OFF:LED_ON);
 
             vTaskDelay(100/portTICK_PERIOD_MS);
         }

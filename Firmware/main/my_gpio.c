@@ -75,12 +75,12 @@ void init_pwm(void)
     ESP_ERROR_CHECK(ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0));
 }
 
-void led_set_level(bool led_level)
+void led_set_level(led_level_t led_level)
 {
     gpio_set_level(PIN_STATUS_LED, led_level);
 }
 
-void buzzer_set_level(bool buzzer_level)
+void buzzer_set_level(buzzer_level_t buzzer_level)
 {
     gpio_set_level(PIN_BUZZER, buzzer_level);
 }
